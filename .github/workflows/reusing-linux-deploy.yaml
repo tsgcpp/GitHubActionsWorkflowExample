@@ -1,0 +1,39 @@
+name: Linux Deploy
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+    secrets:
+      LINUX_DEPLOY_PASSWORD:
+        required: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.environment }}
+    steps:
+      - name: 'Linux Deploy Password Check'
+        shell: bash
+        run: |
+          if [ "${{ secrets.LINUX_DEPLOY_PASSWORD }}" == "XYZ" ]
+          then
+            echo "password was valid"
+          else
+            echo "::error::password was invalid"
+            exit 1
+          fi
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: linux-signed-artifact
+          path: ./
+
+      - name: 'Linux Deploy'
+        shell: bash
+        run: |
+          content=$(cat ./signed_content.txt | base64 --decode)
+          echo "::notice::Linux content is \"${content}\""

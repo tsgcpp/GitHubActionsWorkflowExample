@@ -1,0 +1,36 @@
+name: Windows Build
+
+on:
+  workflow_call:
+    inputs:
+      message:
+        required: true
+        type: string
+      use-cache:
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  build:
+    runs-on: [self-hosted, my-windows]
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: 'Load Cache'
+        if: ${{ inputs.use-cache }}
+        shell: bash
+        run: |
+          echo "::warning::Cache is used in Windows build"
+
+      - name: 'Windows Build'
+        shell: bash
+        run: |
+          echo '{"windows_message":"${{ inputs.message }}"}' > ./content.txt
+
+      - name: 'Upload Artifact'
+        uses: actions/upload-artifact@v3
+        with:
+          name: windows-artifact
+          path: ./content.txt
+          retention-days: 3

@@ -1,0 +1,57 @@
+name: Linux Build
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+      message:
+        required: true
+        type: string
+    secrets:
+      LINUX_SIGN_PASSWORD:
+        required: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: 'Linux Sign Password Check'
+        shell: bash
+        run: |
+          if [ "${{ secrets.LINUX_SIGN_PASSWORD }}" == "ABC" ]
+          then
+            echo "password was valid"
+          else
+            echo "::error::password was invalid"
+            exit 1
+          fi
+
+      - name: 'Linux Build'
+        shell: bash
+        run: |
+          echo '{"linux_message":"${{ inputs.message }}"}' > ./content.txt
+
+      - name: 'Linux Sign'
+        shell: bash
+        run: |
+          cat ./content.txt | base64 > ./signed_content.txt
+
+      - name: 'Upload Artifact'
+        uses: actions/upload-artifact@v3
+        with:
+          name: linux-artifact
+          path: ./content.txt
+          retention-days: 3
+
+      - name: 'Upload Artifact'
+        uses: actions/upload-artifact@v3
+        with:
+          name: linux-signed-artifact
+          path: ./signed_content.txt
+          retention-days: 3

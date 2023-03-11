@@ -1,0 +1,47 @@
+name: Windows Sign
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+    secrets:
+      WINDOWS_SIGN_PASSWORD:
+        required: true
+
+jobs:
+  sign:
+    runs-on: [self-hosted, my-windows-signing]
+    environment:
+      name: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: 'Windows Sign Password Check'
+        shell: bash
+        run: |
+          if [ "${{ secrets.WINDOWS_SIGN_PASSWORD }}" == "ABC" ]
+          then
+            echo "password was valid"
+          else
+            echo "::error::password was invalid"
+            exit 1
+          fi
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: windows-artifact
+          path: ./
+
+      - name: 'Windows Sign'
+        shell: bash
+        run: |
+          cat ./content.txt | base64 > ./signed_content.txt
+
+      - name: 'Upload Artifact'
+        uses: actions/upload-artifact@v3
+        with:
+          name: windows-signed-artifact
+          path: ./signed_content.txt
+          retention-days: 3
