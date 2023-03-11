@@ -1,0 +1,119 @@
+name: Workflow Production
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  l01-windows-build:
+    uses: tsgcpp/GitHubActionsWorkflowExample/.github/workflows/reusing-windows-build.yaml@wip
+    with:
+      message: 'Hello Windows Production'
+
+  l01-windows-sign:
+    needs: l01-windows-build
+    uses: tsgcpp/GitHubActionsWorkflowExample/.github/workflows/reusing-windows-sign.yaml@wip
+    with:
+      environment: Production
+    secrets: inherit
+
+  l01-windows-deploy:
+    needs: l01-windows-sign
+    uses: tsgcpp/GitHubActionsWorkflowExample/.github/workflows/reusing-windows-deploy.yaml@wip
+    with:
+      environment: Production
+    secrets: inherit
+
+  l02-mac-build:
+    uses: tsgcpp/GitHubActionsWorkflowExample/.github/workflows/reusing-mac-build.yaml@wip
+    with:
+      environment: Production
+      message: 'Hello Mac Production'
+    secrets: inherit
+
+  l02-mac-deploy:
+    needs: l02-mac-build
+    uses: tsgcpp/GitHubActionsWorkflowExample/.github/workflows/reusing-mac-deploy.yaml@wip
+    with:
+      environment: Production
+    secrets: inherit
+
+  l03-linux-build:
+    uses: tsgcpp/GitHubActionsWorkflowExample/.github/workflows/reusing-linux-build.yaml@wip
+    with:
+      environment: Production
+      message: 'Hello Linux Production'
+    secrets: inherit
+
+  l03-linux-deploy:
+    needs: l03-linux-build
+    uses: tsgcpp/GitHubActionsWorkflowExample/.github/workflows/reusing-linux-deploy.yaml@wip
+    with:
+      environment: Production
+    secrets: inherit
+
+  failure-notice:
+    runs-on: ubuntu-latest
+    if: ${{ failure() }}
+    needs: [l01-windows-deploy, l02-mac-deploy, l03-linux-deploy]
+    steps:
+      - name: 'Notice Failure'
+        shell: bash
+        run: |
+          echo "::error::Failure!"
+
+  deploy-review:
+    runs-on: ubuntu-latest
+    needs: [l01-windows-deploy, l02-mac-deploy, l03-linux-deploy]
+    steps:
+      - name: 'Review Notice'
+        shell: bash
+        run: |
+          echo "::notice::Deploy check was approved!"
+
+  l01-windows-release:
+    runs-on: ubuntu-latest
+    needs: deploy-review
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: windows-signed-artifact
+          path: ./
+
+      - name: 'Upload Windows Artifact'
+        shell: bash
+        run: |
+          # releasing...
+          echo "::notice::Windows release was completed!"
+
+  l02-mac-release:
+    runs-on: ubuntu-latest
+    needs: deploy-review
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: mac-signed-artifact
+          path: ./
+
+      - name: 'Upload Mac Artifact'
+        shell: bash
+        run: |
+          # releasing...
+          echo "::notice::Mac release was completed!"
+
+  l03-linux-release:
+    runs-on: ubuntu-latest
+    needs: deploy-review
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: linux-signed-artifact
+          path: ./
+
+      - name: 'Release Linux Artifact'
+        shell: bash
+        run: |
+          # releasing...
+          echo "::notice::Linux release was completed!"

@@ -1,0 +1,67 @@
+name: Mac Build
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+      message:
+        required: true
+        type: string
+      use-cache:
+        required: false
+        default: false
+        type: boolean
+    secrets:
+      MAC_SIGN_PASSWORD:
+        required: true
+
+jobs:
+  build:
+    runs-on: [self-hosted, my-mac]
+    environment:
+      name: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: 'Load Cache'
+        if: ${{ inputs.use-cache }}
+        shell: bash
+        run: |
+          echo "::warning::Cache is used in Mac build"
+
+      - name: 'Mac Sign Password Check'
+        shell: bash
+        run: |
+          if [ "${{ secrets.MAC_SIGN_PASSWORD }}" == "ABC" ]
+          then
+            echo "password was valid"
+          else
+            echo "::error::password was invalid"
+            exit 1
+          fi
+
+      - name: 'Mac Build'
+        shell: bash
+        run: |
+          echo '{"mac_message":"${{ inputs.message }}"}' > ./content.txt
+
+      - name: 'Mac Sign'
+        shell: bash
+        run: |
+          cat ./content.txt | base64 > ./signed_content.txt
+
+      - name: 'Upload Artifact'
+        uses: actions/upload-artifact@v3
+        with:
+          name: mac-artifact
+          path: ./content.txt
+          retention-days: 3
+
+      - name: 'Upload Artifact'
+        uses: actions/upload-artifact@v3
+        with:
+          name: mac-signed-artifact
+          path: ./signed_content.txt
+          retention-days: 3

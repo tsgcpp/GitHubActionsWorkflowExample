@@ -1,0 +1,86 @@
+name: Workflow Development
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      message-suffix:
+        description: 'Message Suffix'
+        default: foo
+        type: string
+      use-cache:
+        description: 'Use Cache'
+        default: true
+        type: boolean
+
+jobs:
+  l01-windows-build:
+    uses: tsgcpp/GitHubActionsWorkflowExample/.github/workflows/reusing-windows-build.yaml@wip
+    with:
+      message: 'Hello Windows Development ${{ inputs.message-suffix }}'
+      use-cache: ${{ inputs.use-cache }}
+
+  l01-windows-sign:
+    needs: l01-windows-build
+    uses: tsgcpp/GitHubActionsWorkflowExample/.github/workflows/reusing-windows-sign.yaml@wip
+    with:
+      environment: Development
+    secrets: inherit
+
+  l01-windows-deploy:
+    needs: l01-windows-sign
+    uses: tsgcpp/GitHubActionsWorkflowExample/.github/workflows/reusing-windows-deploy.yaml@wip
+    with:
+      environment: Development
+    secrets: inherit
+
+  l02-mac-build:
+    uses: tsgcpp/GitHubActionsWorkflowExample/.github/workflows/reusing-mac-build.yaml@wip
+    with:
+      environment: Development
+      message: 'Hello Mac Development ${{ inputs.message-suffix }}'
+      use-cache: ${{ inputs.use-cache }}
+    secrets: inherit
+
+  l02-mac-deploy:
+    needs: l02-mac-build
+    uses: tsgcpp/GitHubActionsWorkflowExample/.github/workflows/reusing-mac-deploy.yaml@wip
+    with:
+      environment: Development
+    secrets: inherit
+
+  l03-linux-build:
+    uses: tsgcpp/GitHubActionsWorkflowExample/.github/workflows/reusing-linux-build.yaml@wip
+    with:
+      environment: Development
+      message: 'Hello Linux Development ${{ inputs.message-suffix }}'
+    secrets: inherit
+
+  l03-linux-deploy:
+    needs: l03-linux-build
+    uses: tsgcpp/GitHubActionsWorkflowExample/.github/workflows/reusing-linux-deploy.yaml@wip
+    with:
+      environment: Development
+    secrets: inherit
+
+  success-notice:
+    runs-on: ubuntu-latest
+    if: ${{ success() }}
+    needs: [l01-windows-deploy, l02-mac-deploy, l03-linux-deploy]
+    steps:
+      - name: 'Notice Failure'
+        shell: bash
+        run: |
+          echo "::notice::All Complete!"
+
+  failure-notice:
+    runs-on: ubuntu-latest
+    if: ${{ failure() }}
+    needs: [l01-windows-deploy, l02-mac-deploy, l03-linux-deploy]
+    steps:
+      - name: 'Notice Failure'
+        shell: bash
+        run: |
+          echo "::error::Failure!"
