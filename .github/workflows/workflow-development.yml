@@ -17,27 +17,27 @@ on:
 
 jobs:
   l01-windows-build:
-    uses: tsgcpp/GitHubActionsWorkflowExample/.github/workflows/reusing-windows-build.yaml@wip
+    uses: tsgcpp/GitHubActionsWorkflowExample/.github/workflows/reusing-windows-build.yaml@main
     with:
       message: 'Hello Windows Development ${{ inputs.message-suffix || github.ref_name }}'
       use-cache: ${{ inputs.use-cache || false }}
 
   l01-windows-sign:
     needs: l01-windows-build
-    uses: tsgcpp/GitHubActionsWorkflowExample/.github/workflows/reusing-windows-sign.yaml@wip
+    uses: tsgcpp/GitHubActionsWorkflowExample/.github/workflows/reusing-windows-sign.yaml@main
     with:
       environment: Development
     secrets: inherit
 
   l01-windows-deploy:
     needs: l01-windows-sign
-    uses: tsgcpp/GitHubActionsWorkflowExample/.github/workflows/reusing-windows-deploy.yaml@wip
+    uses: tsgcpp/GitHubActionsWorkflowExample/.github/workflows/reusing-windows-deploy.yaml@main
     with:
       environment: Development
     secrets: inherit
 
   l02-mac-build:
-    uses: tsgcpp/GitHubActionsWorkflowExample/.github/workflows/reusing-mac-build.yaml@wip
+    uses: tsgcpp/GitHubActionsWorkflowExample/.github/workflows/reusing-mac-build.yaml@main
     with:
       environment: Development
       message: 'Hello Mac Development ${{ inputs.message-suffix || github.ref_name }}'
@@ -46,13 +46,13 @@ jobs:
 
   l02-mac-deploy:
     needs: l02-mac-build
-    uses: tsgcpp/GitHubActionsWorkflowExample/.github/workflows/reusing-mac-deploy.yaml@wip
+    uses: tsgcpp/GitHubActionsWorkflowExample/.github/workflows/reusing-mac-deploy.yaml@main
     with:
       environment: Development
     secrets: inherit
 
   l03-linux-build:
-    uses: tsgcpp/GitHubActionsWorkflowExample/.github/workflows/reusing-linux-build.yaml@wip
+    uses: tsgcpp/GitHubActionsWorkflowExample/.github/workflows/reusing-linux-build.yaml@main
     with:
       environment: Development
       message: 'Hello Linux Development ${{ inputs.message-suffix || github.ref_name }}'
@@ -60,7 +60,7 @@ jobs:
 
   l03-linux-deploy:
     needs: l03-linux-build
-    uses: tsgcpp/GitHubActionsWorkflowExample/.github/workflows/reusing-linux-deploy.yaml@wip
+    uses: tsgcpp/GitHubActionsWorkflowExample/.github/workflows/reusing-linux-deploy.yaml@main
     with:
       environment: Development
     secrets: inherit
