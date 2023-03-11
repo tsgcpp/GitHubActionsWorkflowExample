@@ -19,8 +19,8 @@ jobs:
   l01-windows-build:
     uses: tsgcpp/GitHubActionsWorkflowExample/.github/workflows/reusing-windows-build.yaml@wip
     with:
-      message: 'Hello Windows Development ${{ inputs.message-suffix }}'
-      use-cache: ${{ inputs.use-cache }}
+      message: 'Hello Windows Development ${{ inputs.message-suffix || github.ref_name }}'
+      use-cache: ${{ inputs.use-cache || false }}
 
   l01-windows-sign:
     needs: l01-windows-build
@@ -40,8 +40,8 @@ jobs:
     uses: tsgcpp/GitHubActionsWorkflowExample/.github/workflows/reusing-mac-build.yaml@wip
     with:
       environment: Development
-      message: 'Hello Mac Development ${{ inputs.message-suffix }}'
-      use-cache: ${{ inputs.use-cache }}
+      message: 'Hello Mac Development ${{ inputs.message-suffix || github.ref_name }}'
+      use-cache: ${{ inputs.use-cache || false }}
     secrets: inherit
 
   l02-mac-deploy:
@@ -55,7 +55,7 @@ jobs:
     uses: tsgcpp/GitHubActionsWorkflowExample/.github/workflows/reusing-linux-build.yaml@wip
     with:
       environment: Development
-      message: 'Hello Linux Development ${{ inputs.message-suffix }}'
+      message: 'Hello Linux Development ${{ inputs.message-suffix || github.ref_name }}'
     secrets: inherit
 
   l03-linux-deploy:
